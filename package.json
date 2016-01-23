@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/Xabadu/Vendocop/issues"
   },
-  "homepage": "https://github.com/Xabadu/Vendocop#readme"
+  "homepage": "https://github.com/Xabadu/Vendocop#readme",
+  "dependencies": {
+    "mysql": "^2.10.2"
+  }
 }
