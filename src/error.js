@@ -4,6 +4,7 @@ var nodemailer = require('nodemailer');
 var db = require('../config/db');
 var mail = require('../config/mail').error;
 var smtpConfig = require('../config/mail').smtpConfig;
+var parser = require('../lib/parser');
 
 var connection = mysql.createConnection({
   host: db.host,
@@ -28,8 +29,8 @@ function checkErrors(connection) {
       fs.readFile('./resources/templates/error.html', 'utf8', function(err, html) {
         for(var i = 0; i < total; i++) {
           var row = results[i];
-          mail.text = prepareMessage(html, row);
-          mail.html = prepareMessage(html, row);
+          mail.text = parser.error(html, row);
+          mail.html = parser.error(html, row);
           transporter.sendMail(mail, function(error, info) {
             console.log('Enviado :' + info.response);
             if(error === null) {
@@ -44,15 +45,4 @@ function checkErrors(connection) {
       connection.end();
     }
   });
-}
-
-function prepareMessage(template, content) {
-  var message = template.replace('%created_at%', content.error_created);
-  message = message.replace('%store_name%', content.store_name);
-  message = message.replace('%location_name%', content.location_name);
-  message = message.replace('%error_name%', content.error_name);
-  message = message.replace('%device_name%', content.device);
-  message = message.replace('%urgency%', content.urgency);
-  message = message.replace('%description%', content.description);
-  return message;
 }
