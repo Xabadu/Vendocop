@@ -27,15 +27,22 @@ function checkErrors(connection) {
       var transporter = nodemailer.createTransport(smtpConfig);
       fs.readFile('./resources/templates/error.html', 'utf8', function(err, html) {
         for(var i = 0; i < total; i++) {
-          mail.text = prepareMessage(html, results[i]);
-          mail.html = prepareMessage(html, results[i]);
+          var row = results[i];
+          mail.text = prepareMessage(html, row);
+          mail.html = prepareMessage(html, row);
           transporter.sendMail(mail, function(error, info) {
             console.log('Enviado :' + info.response);
+            if(error === null) {
+              connection.query(db.updateQuery + row.error_id, function(error, results, fields) {
+                connection.end();
+              });
+            }
           });
         }
       });
+    } else {
+      connection.end();
     }
-    connection.end();
   });
 }
 
