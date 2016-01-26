@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Vendocop - Reporte de ventas individuales</title>
+  </head>
+  <body>
+    <h1>¡Hola! </h1>
+    <p>El %current_date% <strong>%location_name%</strong> vendió un total de: <strong>%sales_total%</strong></p>
+    <table style='width:100%; border: 1px solid #ccc;'>
+       <tr style='background-color: #eee;'>
+          <th style='padding: 8px;'>SKU</th>
+          <th>Producto</th>
+          <th>Precio</th>
+          <th>Cant</th>
+          <th>Total</th>
+          <th>Medio de pago</th>
+          <th>Fecha</th>
+          <th>Hora</th>
+       </tr>
+       %sales_info%
+    </table>
+    <p>Recomendamos reponer el siguiente stock:</p>
+    <table style='width:100%; border: 1px solid #ccc;'>
+       <tr style='background-color: #eee;'>
+          <th style='padding: 8px;'>SKU</th>
+          <th>Producto</th>
+          <th>stock</th>
+       </tr>
+       %repositions%
+    </table>
+    <p>Saludos,
+    <br>Vendocop</p>
+  </body>
+</html>
