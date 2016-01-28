@@ -6,7 +6,7 @@
   </head>
   <body>
     <h1>¡Hola! </h1>
-    <p>El %current_date% <strong>%location_name%</strong> vendió un total de: <strong>%sales_total%</strong></p>
+    <p>El %current_date% <strong>%store_name% %location_name% (%store_metadata%)</strong> vendió un total de: <strong>%sales_total%</strong></p>
     <table style='width:100%; border: 1px solid #ccc;'>
        <tr style='background-color: #eee;'>
           <th style='padding: 8px;'>SKU</th>
@@ -18,7 +18,7 @@
           <th>Fecha</th>
           <th>Hora</th>
        </tr>
-       %sales_info%
+       %sales%
     </table>
     <p>Recomendamos reponer el siguiente stock:</p>
     <table style='width:100%; border: 1px solid #ccc;'>

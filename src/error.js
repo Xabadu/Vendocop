@@ -17,7 +17,9 @@ connection.connect(function(err) {
     console.error('Error connecting: ' + err.stack);
     return;
   }
-  checkErrors(connection);
+  connection.query(db.setLocaleQuery, function(error, results, fields) {
+    checkErrors();
+  });
 });
 
 var dispatchMessage = function(row, message, connection) {
@@ -26,20 +28,27 @@ var dispatchMessage = function(row, message, connection) {
   transporter.sendMail(mail, function(error, info) {
     console.log('Enviado: ' + info.response);
     if(error === null) {
-      connection.query(db.updateQuery + row.error_id, function(error, results, fields) {
+      connection.query(db.updateErrorsQuery + row.error_id, function(error, results, fields) {
         connection.end();
       });
     }
   });
 }
 
-function checkErrors(connection) {
+function checkErrors() {
   connection.query(db.errorsQuery, function(error, results, fields){
     var total = results.length;
     if(total > 0) {
-      var transporter = nodemailer.createTransport(smtpConfig);
       for(var i = 0; i < total; i++) {
         var row = results[i];
+        switch(row.urgency) {
+          case 1: row.urgency = 'alta';
+                  break;
+          case 2: row.urgency = 'media';
+                  break;
+          case 3: row.urgency = 'baja';
+                  break;
+        }
         parser.template(row, 'error', connection, dispatchMessage);
       }
     } else {
