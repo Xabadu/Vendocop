@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Vendocop - Reporte de ventas acumulado</title>
+  </head>
+  <body>
+    <h1>¡Hola!</h1>
+    <p>El %today% en todas las tiendas se vendió un total de <b>%sales_products%</b> productos, en <strong>%sales_transactions%</strong> transacciones y un total de: <b>%sales_amount%</b></p>
+    <table style='width:100%; border: 1px solid #ccc;'>
+       <tr style='background-color: #eee;'>
+          <th style='padding: 8px;'>Tienda</th>
+          <th>Cantidad de ventas</th>
+          <th>Total de ventas</th>
+          <th>Errores</th>
+       </tr>
+       %sales%
+    </table>
+    <p>Saludos,
+    <br>Vendocop</p>
+  </body>
+</html>

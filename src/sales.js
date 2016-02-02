@@ -28,16 +28,22 @@ connection.connect(function(err) {
   });
 });
 
-var dispatchMessage = function(row, data, message) {
-  mail.subject = 'Reporte de ventas diarias ' + row.store_name + ' ' + row.store_location;
+var dispatchMessage = function(type, row, data, message) {
+  if(type == 'individual') {
+    mail.subject = 'Reporte de ventas diarias ' + row.store_name + ' ' + row.store_location;
+  } else if(type == 'summary') {
+    mail.subject = 'Resumen de ventas diarias';
+  }
   mail.text = mail.html = message;
   transporter.sendMail(mail, function(error, info) {
-    console.log('Enviado: ' + row.store_name + ' ' + row.store_location);
-    if(data.length > 0) {
-      parser.template(data, 'sales-individual', null, dispatchMessage);
-    } else {
-      return;
+    if(type == 'individual') {
+      console.log('Enviado: ' + row.store_name + ' ' + row.store_location);
+      if(data.length > 0) {
+        parser.template(data, 'sales-individual', null, dispatchMessage);
+      }
     }
+    console.log('Enviado ' + info.response);
+    return;
   });
 }
 
@@ -51,7 +57,12 @@ function generateSalesReport(type) {
       connection.end();
     });
   } else if(type == 'summary') {
-
+    connection.query(db.getSalesSummaryQuery, function(error, results, fields) {
+      if(results.length > 0) {
+        var parsedData = prepareSalesSummary(results);
+        parser.template(parsedData, 'sales-summary', connection, dispatchMessage);
+      }
+    });
   }
 }
 
@@ -102,5 +113,22 @@ function prepareSalesData(original) {
       data.push(store);
     }
   }
+  return data;
+}
+
+function prepareSalesSummary(original) {
+  var data = {
+    today: original[0].today,
+    sales: original
+  };
+  var amount = 0, products = 0, transactions = 0;
+  for(var i = 0, total = original.length; i < total; i++) {
+    amount += original[i].sales_amount;
+    products += original[i].products_total;
+    transactions += original[i].sales_total;
+  }
+  data.sales_amount = amount;
+  data.sales_products = products;
+  data.sales_transactions = transactions;
   return data;
 }
