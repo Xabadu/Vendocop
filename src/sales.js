@@ -44,7 +44,9 @@ var dispatchMessage = function(type, row, data, message) {
       }
     }
     console.log('Enviado ' + info.response);
-    return;
+    if(type == 'summary') {
+      process.exit();
+    }
   });
 }
 
