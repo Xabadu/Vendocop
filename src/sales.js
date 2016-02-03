@@ -36,6 +36,7 @@ var dispatchMessage = function(type, row, data, message) {
   }
   mail.text = mail.html = message;
   transporter.sendMail(mail, function(error, info) {
+    console.log(error);
     if(type == 'individual') {
       console.log('Enviado: ' + row.store_name + ' ' + row.store_location);
       if(data.length > 0) {
