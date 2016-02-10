@@ -4,7 +4,7 @@ var orm = require('../lib/orm');
 
 var errorHandler = {
   getData: function() {
-    orm.connect(orm.connection)
+    orm.connect()
        .then(orm.setLocale)
        .then(orm.getActiveErrors)
        .then(function(results) {
@@ -37,7 +37,7 @@ var errorHandler = {
     }
   },
   updateData: function() {
-    orm.acknowledgeErrors(orm.connection)
+    orm.acknowledgeErrors()
       .then(function() {
         console.log('Data updated');
         process.exit();
