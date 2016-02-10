@@ -1,137 +1,138 @@
-var mysql = require('mysql');
-var nodemailer = require('nodemailer');
-var db = require('../config/db');
-var mail = require('../config/mail').error;
-var smtpConfig = require('../config/mail').smtpConfig;
+var mailer = require('../lib/mailer');
+var orm = require('../lib/orm');
 var parser = require('../lib/parser');
 
-if(process.argv[2] !== 'individual' && process.argv[2] !== 'summary') {
-  return false;
-}
-
-var connection = mysql.createConnection({
-  host: db.host,
-  user: db.user,
-  password: db.password,
-  database: db.database
-});
-
-var transporter = nodemailer.createTransport(smtpConfig);
-
-connection.connect(function(err) {
-  if(err) {
-    console.error('Error connecting: ' + err.stack);
-    return;
-  }
-  connection.query(db.setLocaleQuery, function(error, results, fields) {
-    generateSalesReport(process.argv[2]);
-  });
-});
-
-var dispatchMessage = function(type, row, data, message) {
-  if(type == 'individual') {
-    mail.subject = 'Reporte de ventas diarias ' + row.store_name + ' ' + row.store_location;
-  } else if(type == 'summary') {
-    mail.subject = 'Resumen de ventas diarias';
-  }
-  mail.text = mail.html = message;
-  transporter.sendMail(mail, function(error, info) {
-    console.log(error);
-    if(type == 'individual') {
-      console.log('Enviado: ' + row.store_name + ' ' + row.store_location);
-      if(data.length > 0) {
-        parser.template(data, 'sales-individual', null, dispatchMessage);
-      }
+var salesReporter = {
+  getStores: function(type) {
+    orm.connect()
+      .then(orm.setLocale)
+      .then(function() {
+        if(type == 'individual') {
+          salesReporter.getIndividualSales();
+        } else if(type == 'summary') {
+          salesReporter.getSummaryData();
+        }
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+  },
+  getIndividualSales: function() {
+    orm.getDailySales()
+      .then(function(results) {
+        var dailySales = parser.dailySales(results);
+        dailySales = parser.capitalize(dailySales, 'today');
+        dailySales = dailySales.map(function(st) {
+          st.sales_total = '$' + parser.monetize(st.sales_total);
+          return st;
+        });
+        salesReporter.prepareMessage(dailySales, 'sales-individual');
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+  },
+  getSummaryData: function() {
+    orm.getSummarySales()
+      .then(function(results) {
+        results = parser.capitalize(results, 'today');
+        var summarySales = parser.summarySales(results);
+        var ids = summarySales.sales.map(function(sale) {
+          return sale.id;
+        });
+        orm.getStores('exclude', ids)
+          .then(function(stores) {
+            for(var i = 0, total = stores.length; i < total; i++) {
+              var store = {
+                store_name: stores[i].store_name,
+                store_location: stores[i].store_location,
+                sales_total: 0,
+                sales_amount: 0,
+                errors_total: '-'
+              };
+              summarySales.sales.push(store);
+            }
+            salesReporter.getErrors(summarySales, 'sales-summary');
+          })
+          .catch(function(error){
+            console.log(error);
+          });
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+  },
+  getErrors: function(data, template) {
+    orm.getDailyErrors()
+      .then(function(errors) {
+        if(errors.length > 0) {
+          data.sales = parser.attachErrors(data.sales, errors);
+          salesReporter.prepareMessage(data, template);
+        } else {
+          salesReporter.prepareMessage(data, template);
+        }
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+  },
+  prepareMessage: function(data, template) {
+    var storesInfo = [];
+    if(template == 'sales-individual') {
+      data = data.map(function(store) {
+        store.sales = store.sales.map(function(sale) {
+            sale.sales_sku = parser.fillSKU(sale.sales_sku);
+            sale.sales_price = '$' + parser.monetize(sale.sales_price);
+            sale.sales_total = '$' + parser.monetize(sale.sales_total);
+            sale = parser.setPaymentMethod(sale);
+            return sale;
+        });
+        return store;
+      });
+      storesInfo = data.map(function(store) {
+        return store.store_name + ' ' + store.store_location;
+      });
+    } else if(template == 'sales-summary') {
+      data.sales = data.sales.map(function(sale) {
+        delete sale.today;
+        delete sale.id;
+        delete sale.products_total;
+        sale.store_name += ' ' + sale.store_location;
+        delete sale.store_location;
+        sale.sales_amount = '$' + parser.monetize(sale.sales_amount);
+        sale.errors_total = '-';
+        return sale;
+      });
+      data = [data];
     }
-    console.log('Enviado ' + info.response);
-    if(type == 'summary') {
+
+    var messages = [];
+    var type = template;
+    parser.getTemplate(template)
+      .then(function(template) {
+        messages = parser.replaceContent(template, data);
+        salesReporter.sendMessages(messages, type, storesInfo);
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+  },
+  sendMessages: function(messages, type, stores) {
+    if(messages.length > 0) {
+      if(type == 'sales-individual' || type == 'salesIndividual') {
+        var override = {
+          subject: 'Reporte de ventas diarias ' + stores.shift()
+        };
+        mailer.send('salesIndividual', messages, salesReporter.sendMessages, override, stores);
+      } else {
+        mailer.send('salesSummary', messages, salesReporter.sendMessages);
+      }
+    } else {
+      console.log('Emails sent');
+      orm.close();
       process.exit();
     }
-  });
-}
-
-function generateSalesReport(type) {
-  if(type == 'individual') {
-    connection.query(db.getStoresSalesQuery, function(error, results, fields){
-      if(results.length > 0) {
-        var parsedData = prepareSalesData(results);
-        parser.template(parsedData, 'sales-individual', connection, dispatchMessage);
-      }
-      connection.end();
-    });
-  } else if(type == 'summary') {
-    connection.query(db.getSalesSummaryQuery, function(error, results, fields) {
-      if(results.length > 0) {
-        var parsedData = prepareSalesSummary(results);
-        parser.template(parsedData, 'sales-summary', connection, dispatchMessage);
-      }
-    });
   }
-}
+};
 
-function prepareSalesData(original) {
-  var data = [];
-  for(var i = 0, total = original.length; i < total; i++) {
-    var temp = original.shift();
-    var exists = false;
-    var position;
-    for(var j = 0, length = data.length; j < length; j++) {
-      if(data[j].store_name == temp.store_name && data[j].store_location == temp.store_location) {
-        exists = true;
-        position = j;
-      }
-    }
-    var sale_final = temp.sales_price * temp.sales_quantity;
-    if(exists) {
-      var sale = {
-        sales_sku: temp.sales_sku,
-        sales_product_name: temp.sales_product_name,
-        sales_price: temp.sales_price,
-        sales_quantity: temp.sales_quantity,
-        sales_total: sale_final,
-        payment_method: temp.payment_method,
-        sale_date: temp.sale_date,
-        time_date: temp.time_date
-      };
-      data[position].sales_total += sale_final;
-      data[position].sales.push(sale);
-    } else {
-      var store = {
-        today: temp.today,
-        store_name: temp.store_name,
-        store_location: temp.store_location,
-        store_metadata: temp.store_metadata,
-        sales_total: sale_final,
-        sales: [{
-          sales_sku: temp.sales_sku,
-          sales_product_name: temp.sales_product_name,
-          sales_price: temp.sales_price,
-          sales_quantity: temp.sales_quantity,
-          sales_total: sale_final,
-          payment_method: temp.payment_method,
-          sale_date: temp.sale_date,
-          time_date: temp.time_date
-        }]
-      };
-      data.push(store);
-    }
-  }
-  return data;
-}
-
-function prepareSalesSummary(original) {
-  var data = {
-    today: original[0].today,
-    sales: original
-  };
-  var amount = 0, products = 0, transactions = 0;
-  for(var i = 0, total = original.length; i < total; i++) {
-    amount += original[i].sales_amount;
-    products += original[i].products_total;
-    transactions += original[i].sales_total;
-  }
-  data.sales_amount = amount;
-  data.sales_products = products;
-  data.sales_transactions = transactions;
-  return data;
-}
+salesReporter.getStores(process.argv[2]);
