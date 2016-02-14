@@ -24,9 +24,25 @@ var salesReporter = {
         dailySales = parser.capitalize(dailySales, 'today');
         dailySales = dailySales.map(function(st) {
           st.sales_total = '$' + parser.monetize(st.sales_total);
+          st.counters = parser.countPayments(st.sales);
           return st;
         });
-        salesReporter.prepareMessage(dailySales, 'sales-individual');
+        orm.getStores().
+          then(orm.getSalesBenchmark)
+          .then(function(benchmark) {
+            dailySales = dailySales.map(function(sale) {
+              for(var i = 0, total = benchmark.length; i < total; i++) {
+                if(benchmark[i].store_id == sale.store_id) {
+                  sale.benchmark = benchmark[i];
+                }
+              }
+              return sale;
+            });
+            salesReporter.prepareMessage(dailySales, 'sales-individual');
+          })
+          .catch(function(error) {
+            console.log(error);
+          });
       })
       .catch(function(error) {
         console.log(error);
@@ -87,6 +103,8 @@ var salesReporter = {
             sale = parser.setPaymentMethod(sale);
             return sale;
         });
+        store.payments_chart = parser.createChart('payments', store.counters);
+        store.benchmark_chart = parser.createChart('benchmark', store.benchmark);
         return store;
       });
       storesInfo = data.map(function(store) {
