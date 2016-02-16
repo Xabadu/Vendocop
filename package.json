@@ -1,6 +1,6 @@
 {
   "name": "vendocop",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Utility for Error and Sales notifications",
   "main": "index.js",
   "scripts": {
