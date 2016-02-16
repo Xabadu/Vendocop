@@ -60,6 +60,7 @@ var salesReporter = {
           .then(function(stores) {
             for(var i = 0, total = stores.length; i < total; i++) {
               var store = {
+                id: stores[i].store_id,
                 store_name: stores[i].store_name,
                 store_location: stores[i].store_location,
                 sales_total: 0,
@@ -118,7 +119,9 @@ var salesReporter = {
         sale.store_name += ' ' + sale.store_location;
         delete sale.store_location;
         sale.sales_amount = '$' + parser.monetize(sale.sales_amount);
-        sale.errors_total = '-';
+        if(sale.errors_total == undefined) {
+          sale.errors_total = '-';
+        }
         return sale;
       });
       data = [data];
