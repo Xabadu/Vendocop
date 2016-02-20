@@ -1,10 +1,11 @@
 {
   "name": "vendocop",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Utility for Error and Sales notifications",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha"
+    "test": "mocha",
+    "cover": "istanbul cover _mocha"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,8 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "chai-as-promised": "^5.2.0",
+    "istanbul": "^0.4.2",
     "mocha": "^2.4.5"
   }
 }
