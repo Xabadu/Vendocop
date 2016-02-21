@@ -239,8 +239,8 @@ describe('Parser', function() {
       expect(chart).to.be.a('string');
       expect(chart).to.contain('http');
     });
-    it('should return a line chart for benchmark data', function() {
-      var benchmark = [10000, 20000, 0, 35000];
+    it('should return a bar chart for benchmark data', function() {
+      var benchmark = {sales: [10000, 20000, 0, 35000]};
       var chart = parser.createChart('benchmark', benchmark);
       expect(chart).to.be.a('string');
       expect(chart).to.contain('http');
