@@ -9,8 +9,12 @@ var errorHandler = {
        .then(orm.getActiveErrors)
        .then(function(results) {
          console.log('Total errors found: ' + results.length);
-         results = results.map(parser.setUrgency);
-         errorHandler.prepareMessage(results);
+         if(results.length > 0) {
+           results = results.map(parser.setUrgency);
+           errorHandler.prepareMessage(results);
+         } else {
+           process.exit();
+         }
        })
        .catch(function(error) {
          console.log(error);
