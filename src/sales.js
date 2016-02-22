@@ -56,6 +56,7 @@ var salesReporter = {
         var ids = summarySales.sales.map(function(sale) {
           return sale.id;
         });
+        ids.push(99);
         orm.getStores('exclude', ids)
           .then(function(stores) {
             for(var i = 0, total = stores.length; i < total; i++) {
