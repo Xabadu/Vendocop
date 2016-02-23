@@ -90,8 +90,8 @@ describe('Parser', function() {
       expect(payments[0].payment_method).to.be.a('string');
       expect(payments[1].payment_method).to.be.a('string');
       expect(payments[2].payment_method).to.be.a('string');
-      expect(payments[0].payment_method).to.equal('Crédito');
-      expect(payments[1].payment_method).to.equal('Débito');
+      expect(payments[0].payment_method).to.equal('Débito');
+      expect(payments[1].payment_method).to.equal('Crédito');
       expect(payments[2].payment_method).to.equal('Efectivo');
     });
   });
@@ -226,8 +226,8 @@ describe('Parser', function() {
       var sales = [{payment_method: 1}, {payment_method: 1}, {payment_method: 2}, {payment_method: 3}];
       var counters = parser.countPayments(sales);
       expect(counters).to.be.a('object');
-      expect(counters.credit).to.equal(2);
-      expect(counters.debit).to.equal(1);
+      expect(counters.debit).to.equal(2);
+      expect(counters.credit).to.equal(1);
       expect(counters.cash).to.equal(1);
     });
   });
