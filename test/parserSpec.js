@@ -255,4 +255,45 @@ describe('Parser', function() {
     });
   });
 
+  describe('#getTimeDifference()', function() {
+    it('should return the difference in seconds between two input dates', function() {
+      var then = new Date();
+      var now = new Date();
+      var expectedDiff = (now.getTime() - then.getTime()) / 1000;
+      var actualDiff = parser.getTimeDifference(now, then);
+      expect(actualDiff).to.equal(expectedDiff);
+      expect(actualDiff).to.be.a('number');
+    });
+  });
+
+  describe('#parseNow()', function() {
+    it('should return a YYYY-mm-dd H:i:s parsed date from a Date object input', function() {
+      var now = new Date();
+      var parsedNow = parser.parseNow(now);
+      expect(parsedNow).to.be.a('string');
+      expect(parsedNow).to.have.length(19);
+      expect(parsedNow).to.contain(':');
+    });
+    it('should add leading zeros to days, months, hours, minutes and seconds lower than 10', function() {
+      var now = new Date();
+      now.setDate(1);
+      now.setMonth(2);
+      now.setHours(3);
+      now.setMinutes(4);
+      now.setSeconds(5);
+      var parsedNow = parser.parseNow(now);
+      expect(parsedNow).to.equal('2016-03-01 03:04:05');
+    });
+    it('should not add anything to days, months, hours, minutes and seconds higher than 10', function() {
+      var now = new Date();
+      now.setDate(11);
+      now.setMonth(11);
+      now.setHours(13);
+      now.setMinutes(14);
+      now.setSeconds(15);
+      var parsedNow = parser.parseNow(now);
+      expect(parsedNow).to.equal('2016-12-11 13:14:15');
+    });
+  });
+
 });
