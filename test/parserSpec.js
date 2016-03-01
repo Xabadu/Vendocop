@@ -97,6 +97,10 @@ describe('Parser', function() {
   });
 
   describe('#fillSKU()', function() {
+    it('should return Empty SKU if the product id is empty', function() {
+      var sku = parser.fillSKU(null);
+      expect(sku).to.equal('Empty SKU');
+    });
     it('should fill with zeros the original product ids until it completes 6 digits', function() {
       var ids = [123, 22, 6];
       ids = ids.map(function(id) {
