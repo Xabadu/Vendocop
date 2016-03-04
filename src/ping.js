@@ -20,6 +20,8 @@ var pings = {
         await (orm.insertError(store.store_id, 901, parsedNow));
         console.log('Error agregado a la máquina ' + store.store_id);
       }
+      await (orm.cleanPings(store.store_id));
+      console.log('Pings antiguos han sido eliminados.');
     });
     process.exit();
   })
