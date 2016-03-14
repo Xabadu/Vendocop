@@ -6,13 +6,20 @@ var parser = require('../lib/parser');
 var pings = {
   check: async (function() {
     var stores = await (orm.getStores());
+    console.log(stores);
     stores.forEach(function(store) {
       var ping = await (orm.getLastPing(store.store_id));
+      console.log('Last ping for store: ' + store);
+      console.log(ping);
       var down = false;
       var now = new Date();
+      console.log('Now date: ' + now);
       var parsedNow = parser.parseNow(now);
+      console.log('Parsed now: ' + parsedNow);
       if(ping.length > 0) {
-        if(parser.getTimeDifference(now, ping[0].created_at) > 4200) {
+        var diff = parser.getTimeDifference(now, ping[0].created_at);
+        console.log('Diff: ' + diff);
+        if(diff > 5400) {
           down = true;
         }
       }
