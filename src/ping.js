@@ -19,7 +19,7 @@ var pings = {
       if(ping.length > 0) {
         var diff = parser.getTimeDifference(now, ping[0].created_at);
         console.log('Diff: ' + diff);
-        if(diff > 5400) {
+        if(diff > 16200) {
           down = true;
         }
       }
