@@ -67,6 +67,12 @@ describe('Parser', function() {
   });
 
   describe('#setUrgency()', function() {
+    it('should throw an error if urgency is undefined', function() {
+      var obj = {
+        id: 1
+      };
+      expect(function(){parser.setUrgency(obj)}).to.throw(ReferenceError, /Urgency is undefined/);
+    });
     it('should map numbers to urgency levels', function() {
       var urgencies = [{urgency: 1}, {urgency: 2}, {urgency: 3}];
       urgencies = urgencies.map(function(urgency) {
