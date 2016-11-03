@@ -40,6 +40,14 @@ describe('Parser', function() {
       expect(message[0]).to.be.a('string');
       expect(message[0]).to.contain('<tr><td>'+inputData[0].characters[0].name+'</td></tr>');
     });
+    it('should not fail if a key is undefined', function() {
+      var inputData = [{
+        name: 'John Cena'
+      }];
+      var message = '%name% is %age%';
+      expect(parser.replaceContent(message, inputData)).to.be.a('array');
+      expect(parser.replaceContent(message, inputData)[0]).to.equal('John Cena is %age%');
+    });
 
   });
 
