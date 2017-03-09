@@ -296,7 +296,7 @@ describe('Parser', function() {
       now.setMinutes(4);
       now.setSeconds(5);
       var parsedNow = parser.parseNow(now);
-      expect(parsedNow).to.equal('2016-03-01 03:04:05');
+      expect(parsedNow).to.equal('2017-03-01 03:04:05');
     });
     it('should not add anything to days, months, hours, minutes and seconds higher than 10', function() {
       var now = new Date();
@@ -306,7 +306,7 @@ describe('Parser', function() {
       now.setMinutes(14);
       now.setSeconds(15);
       var parsedNow = parser.parseNow(now);
-      expect(parsedNow).to.equal('2016-12-11 13:14:15');
+      expect(parsedNow).to.equal('2017-12-11 13:14:15');
     });
   });
 
