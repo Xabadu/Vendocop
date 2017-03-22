@@ -5,7 +5,7 @@ var parser = require('../lib/parser');
 
 var pings = {
   check: async (function() {
-    var stores = await (orm.getStores('exclude', [6]));
+    var stores = await (orm.getStores());
     stores.forEach(function(store) {
       var ping = await (orm.getLastPing(store.store_id));
       console.log('Last ping for store: ' + store);
