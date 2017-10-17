@@ -4,8 +4,15 @@ var orm = require('../lib/orm');
 var parser = require('../lib/parser');
 
 var pings = {
-  check: async (function() {
-    var stores = await (orm.getStores('exclude', [5, 11]));
+  check: async (function(vendor) {
+    var maxTimeDiff, stores;
+    if(typeof vendor !== 'undefined') {
+      maxTimeDiff = 3600;
+      stores = await (orm.getStores(null, null, vendor));
+    } else {
+      maxTimeDiff = 16200;
+      stores = await (orm.getStores('exclude', [5, 11, 901, 902, 903]));
+    }
     stores.forEach(function(store) {
       var ping = await (orm.getLastPing(store.store_id));
       console.log('Last ping for store: ' + store);
@@ -18,7 +25,7 @@ var pings = {
       if(ping.length > 0) {
         var diff = parser.getTimeDifference(now, ping[0].created_at);
         console.log('Diff: ' + diff);
-        if(diff > 16200) {
+        if(diff > maxTimeDiff) {
           down = true;
         }
       }
@@ -33,4 +40,4 @@ var pings = {
   })
 };
 
-pings.check();
+pings.check(process.argv[2]);
