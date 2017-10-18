@@ -7,7 +7,7 @@ var pings = {
   check: async (function(vendor) {
     var maxTimeDiff, stores;
     if(typeof vendor !== 'undefined') {
-      maxTimeDiff = 3600;
+      maxTimeDiff = 1500;
       stores = await (orm.getStores(null, null, vendor));
     } else {
       maxTimeDiff = 16200;
