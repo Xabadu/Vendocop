@@ -1,40 +1,38 @@
+var async = require('asyncawait/async');
+var await = require('asyncawait/await');
 var mailer = require('../lib/mailer');
 var parser = require('../lib/parser');
 var orm = require('../lib/orm');
 
 var errorHandler = {
-  getData: function() {
-    orm.connect()
-       .then(orm.setLocale)
-       .then(orm.getActiveErrors)
-       .then(function(results) {
-         console.log('Total errors found: ' + results.length);
-         if(results.length > 0) {
-           results = results.map(parser.setUrgency);
-           errorHandler.prepareMessage(results);
-         } else {
-           process.exit();
-         }
-       })
-       .catch(function(error) {
-         console.log(error);
-       });
-  },
-  prepareMessage: function(data) {
+  getData: async(function(vendor) {
+    var errors;
+    await(orm.connect());
+    errors = await(orm.getActiveErrors(vendor));
+    console.log('Total errors found: ' + errors.length);
+    if(errors.length > 0) {
+      errors = errors.map(parser.setUrgency);
+      errorHandler.prepareMessage(errors, vendor);
+    } else {
+      process.exit();
+    }
+  }),
+  prepareMessage: function(data, vendor) {
     var messages = [];
     data = parser.capitalize(data, 'date_created');
     parser.getTemplate('error')
       .then(function(template) {
         messages = parser.replaceContent(template, data);
-        errorHandler.sendMessages(messages);
+        errorHandler.sendMessages(messages, vendor);
       })
       .catch(function(error) {
         console.log(error);
       });
   },
-  sendMessages: function(messages) {
+  sendMessages: function(messages, vendor) {
+    var type = typeof vendor !== 'undefined' ? 'error' + vendor : 'error';
     if(messages.length > 0) {
-      mailer.send('error', messages, errorHandler.sendMessages);
+      mailer.send(type, messages, errorHandler.sendMessages);
     } else {
       console.log('Emails sent');
       errorHandler.updateData();
@@ -52,4 +50,4 @@ var errorHandler = {
   }
 };
 
-errorHandler.getData();
+errorHandler.getData(process.argv[2]);
