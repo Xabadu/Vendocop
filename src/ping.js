@@ -11,7 +11,7 @@ var pings = {
       stores = await (orm.getStores(null, null, vendor));
     } else {
       maxTimeDiff = 16200;
-      stores = await (orm.getStores('exclude', [5, 11, 901, 902, 903]));
+      stores = await (orm.getStores('exclude', [11, 901, 902, 903]));
     }
     stores.forEach(function(store) {
       var ping = await (orm.getLastPing(store.store_id));
