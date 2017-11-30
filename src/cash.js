@@ -33,7 +33,8 @@ var cash = {
   }),
   sendMessages: function(messages) {
     if(messages.length > 0) {
-      mailer.send('cashDifference', messages, errorHandler.sendMessages);
+      console.log('sending mail');
+      mailer.send('cashDifference', messages, cash.sendMessages);
     } else {
       console.log('Emails sent');
     }
