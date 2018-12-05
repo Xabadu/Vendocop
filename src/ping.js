@@ -8,10 +8,10 @@ var pings = {
     var maxTimeDiff, stores;
     if(typeof vendor !== 'undefined') {
       maxTimeDiff = 1500;
-      stores = await (orm.getStores(null, null, vendor));
+      stores = await (orm.getStores('exclude', [901, 902, 903], vendor));
     } else {
       maxTimeDiff = 16200;
-      stores = await (orm.getStores('exclude', [1, 11, 901, 902, 903]));
+      stores = await (orm.getStores('exclude', [1, 5, 6, 11, 901, 902, 903]));
     }
     stores.forEach(function(store) {
       var ping = await (orm.getLastPing(store.store_id));
