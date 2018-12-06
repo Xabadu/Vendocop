@@ -8,7 +8,7 @@ var pings = {
     var maxTimeDiff, stores;
     if(typeof vendor !== 'undefined') {
       maxTimeDiff = 1500;
-      stores = await (orm.getStores('exclude', [901, 902, 903], vendor));
+      stores = await (orm.getStores('exclude', [1, 5, 6, 11, 901, 902, 903], vendor));
     } else {
       maxTimeDiff = 16200;
       stores = await (orm.getStores('exclude', [1, 5, 6, 11, 901, 902, 903]));
