@@ -7,7 +7,7 @@ var pings = {
   check: async (function() {
     var maxTimeDiff, stores;
     maxTimeDiff = 16200;
-    stores = await(orm.getStores('exclude', [1, 5, 6, 11, 901, 902, 903]));
+    stores = await(orm.getStores('exclude', [1, 5, 6, 11, 12, 901, 902, 903]));
     stores.forEach(function(store) {
       var ping = await (orm.getLastPing(store.store_id));
       console.log('Last ping for store: ' + store);
