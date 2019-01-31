@@ -5,34 +5,33 @@ var parser = require('../lib/parser');
 var orm = require('../lib/orm');
 
 var errorHandler = {
-  getData: async(function(vendor) {
+  getData: async(function() {
     var errors;
     await(orm.connect());
-    errors = await(orm.getActiveErrors(vendor));
+    errors = await(orm.getActiveErrors());
     console.log('Total errors found: ' + errors.length);
     if(errors.length > 0) {
       errors = errors.map(parser.setUrgency);
-      errorHandler.prepareMessage(errors, vendor);
+      errorHandler.prepareMessage(errors);
     } else {
       process.exit();
     }
   }),
-  prepareMessage: function(data, vendor) {
+  prepareMessage: function(data) {
     var messages = [];
     data = parser.capitalize(data, 'date_created');
     parser.getTemplate('error')
       .then(function(template) {
         messages = parser.replaceContent(template, data);
-        errorHandler.sendMessages(messages, vendor);
+        errorHandler.sendMessages(messages);
       })
       .catch(function(error) {
         console.log(error);
       });
   },
-  sendMessages: function(messages, vendor) {
-    var type = typeof vendor !== 'undefined' ? 'error' + vendor : 'error';
+  sendMessages: function(messages) {
     if(messages.length > 0) {
-      mailer.send(type, messages, errorHandler.sendMessages);
+      mailer.send('error', messages, errorHandler.sendMessages);
     } else {
       console.log('Emails sent');
       errorHandler.updateData();
@@ -50,4 +49,4 @@ var errorHandler = {
   }
 };
 
-errorHandler.getData(process.argv[2]);
+errorHandler.getData();
